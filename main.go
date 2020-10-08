@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -14,12 +13,11 @@ func main() {
 	}
 	counter, delay, path := parseArgs(args)
 	file, err := os.OpenFile(path, os.O_RDONLY, 0755)
+	defer file.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(delay, counter)
-    block, end := readUntilNewLine(file, 46)
-    fmt.Println(string(block), end)
+	shiftTime(file, delay, counter)
 }
 
 func parseArgs(args []string) (int, int, string) {
