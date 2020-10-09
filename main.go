@@ -20,17 +20,17 @@ func main() {
 	shiftTime(file, delay, counter)
 }
 
-func parseArgs(args []string) (int, int, string) {
+func parseArgs(args []string) (int, float64, string) {
 	length := len(args)
 	counter := 0
-	delay := 0
+    delay := float64(0)
 	in := ""
 
 	for key, arg := range args {
 		switch arg {
 		case "delay":
 			if key+1 < length {
-				delay, _ = strconv.Atoi(args[key+1])
+                delay, _ = strconv.ParseFloat(args[key+1], 32)
 			}
 			break
 
