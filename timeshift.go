@@ -71,7 +71,7 @@ func formatBlock(text string) (Block, error) {
 			Counter: counter,
 			Start:   start,
 			End:     end,
-			Text:    strings.TrimSpace(matches[0][3]),
+			Text:    matches[0][3],
 		}, nil
 	}
 }
@@ -128,7 +128,7 @@ func blockToString(block Block) (string, error) {
 	var text string
 	text += strconv.Itoa(block.Counter) + "\n"
 	text += timeToString(block.Start) + " --> " + timeToString(block.End) + "\n"
-	text += block.Text + "\n"
+	text += block.Text
 	return text, nil
 }
 
@@ -156,7 +156,7 @@ func appendToFile(out *os.File, text string) {
 
 }
 
-func shiftTime(file *os.File, delay float64, counter int) {
+func ShiftTime(file *os.File, out *os.File, delay float64, counter int) {
 	position := 0
 	var text []byte
 	for position != -1 {
@@ -165,7 +165,8 @@ func shiftTime(file *os.File, delay float64, counter int) {
 		if err == nil {
 			block, err = mutateBlock(block, delay, counter)
 			newline, _ := blockToString(block)
-			fmt.Println(newline)
+			out.Write([]byte(newline))
 		}
 	}
+	fmt.Println("resync complete")
 }

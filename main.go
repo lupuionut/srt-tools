@@ -12,12 +12,22 @@ func main() {
 		log.Fatal("Not enough arguments")
 	}
 	counter, delay, path := parseArgs(args)
-	file, err := os.OpenFile(path, os.O_RDONLY, 0755)
-	defer file.Close()
+    shift(counter, delay, path)
+}
+
+func shift(counter int, delay float64, path string) {
+    outPath := path + "-resync"
+	in, err := os.OpenFile(path, os.O_RDONLY, 0755)
+	defer in.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
-	shiftTime(file, delay, counter)
+    out, err := os.Create(outPath)
+    defer out.Close()
+    if err != nil {
+        log.Fatal(err)
+    }
+    ShiftTime(in, out, delay, counter)
 }
 
 func parseArgs(args []string) (int, float64, string) {
