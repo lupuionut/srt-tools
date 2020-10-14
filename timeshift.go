@@ -21,7 +21,7 @@ type Block struct {
 // a block is delimited by a new line
 // return the block and the value where new block starts
 func readUntilNewLine(file *os.File, from int) ([]byte, int) {
-	var last string
+	delimiter := []string{" ", " ", " "}
 	var block_text []byte
 	condition := true
 	stat, _ := file.Stat()
@@ -30,29 +30,32 @@ func readUntilNewLine(file *os.File, from int) ([]byte, int) {
 		return block_text, -1
 	}
 
-	for condition {
+	for condition && from < int(stat.Size()) {
 		text := make([]byte, 1)
 		file.ReadAt(text, int64(from))
 		c := text[0]
+
 		block_text = append(block_text, c)
-		if string(c) == "\n" {
-			if last == "\n" {
-				condition = false
-			} else {
-				last = "\n"
-			}
-		} else {
-			last = ""
+		delimiter = pushToDelimiter(delimiter, string(c))
+		if strings.Join(delimiter, "") == "\n\r\n" ||
+			strings.Join(delimiter[0:2], "") == "\n\n" {
+			condition = false
 		}
 		from++
 	}
-
 	return block_text, from
+}
+
+func pushToDelimiter(delimiter []string, s string) []string {
+	delimiter[0] = delimiter[1]
+	delimiter[1] = delimiter[2]
+	delimiter[2] = s
+	return delimiter
 }
 
 func formatBlock(text string) (Block, error) {
 	regex, err :=
-		regexp.Compile(`(\d{1,}\n)(\d{2}:\d{2}:\d{2},\d{1,3}.*\d{2}:\d{2},\d{1,3}\n)((.|\n)*)`)
+		regexp.Compile(`(\d{1,}[\r|\n]*)(\d{2}:\d{2}:\d{2},\d{1,3}.*\d{2}:\d{2},\d{1,3}[\n|\r]*)((.|\n|\r)*)`)
 
 	if err != nil {
 		return Block{}, err
@@ -150,10 +153,6 @@ func timeToString(t time.Time) string {
 		milliseconds = strings.Repeat("0", 3-len(milliseconds)) + milliseconds
 	}
 	return hour + ":" + minutes + ":" + seconds + "," + milliseconds
-}
-
-func appendToFile(out *os.File, text string) {
-
 }
 
 func ShiftTime(file *os.File, out *os.File, delay float64, counter int) {
